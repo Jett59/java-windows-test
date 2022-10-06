@@ -72,7 +72,8 @@ public class WindowsWindow implements PlatformWindow {
         SegmentAllocator segmentAllocator = SegmentAllocator.newNativeArena(memorySession);
         MemorySegment paintStruct = PAINTSTRUCT.allocate(segmentAllocator);
         MemoryAddress hdc = WINDOWS.BeginPaint(windowHandle, paintStruct);
-        MemoryAddress backgroundBrush = WINDOWS.CreateSolidBrush(WindowsHelper.getColorCode(backgroundColor));
+        MemoryAddress backgroundBrush =
+            WINDOWS.CreateSolidBrush(WindowsHelper.getColorCode(backgroundColor));
         WINDOWS.FillRect(hdc, PAINTSTRUCT.rcPaint$slice(paintStruct), backgroundBrush);
         WINDOWS.DeleteObject(backgroundBrush);
         WINDOWS.EndPage(hdc);
@@ -88,9 +89,9 @@ public class WindowsWindow implements PlatformWindow {
 
   @Override
   public void show() {
+    // We have to do this on the event thread otherwise the window doesn't get focus properly.
     WindowsEventLoop.runOnEventThread(() -> {
-      WINDOWS.ShowWindow(windowHandle, WINDOWS.SW_NORMAL());
-      return 0l;
+      return WINDOWS.ShowWindow(windowHandle, WINDOWS.SW_NORMAL());
     });
   }
 
@@ -102,19 +103,19 @@ public class WindowsWindow implements PlatformWindow {
 
   @Override
   public void setPos(int x, int y) {
-    // TODO Auto-generated method stub
-
+    WINDOWS.MoveWindow(windowHandle, x, y, width, height, WINDOWS.TRUE());
   }
 
   @Override
   public void setSize(int width, int height) {
-    // TODO Auto-generated method stub
-
+    WINDOWS.MoveWindow(windowHandle, x, y, width, height, WINDOWS.TRUE());
   }
 
   @Override
   public void setTitle(String title) {
-    // TODO Auto-generated method stub
-
+    WindowsEventLoop.runOnEventThread(() -> {
+      return WINDOWS.SetWindowTextA(windowHandle,
+          instanceSegmentAllocator.allocateUtf8String(title));
+    });
   }
 }

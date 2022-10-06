@@ -1,19 +1,16 @@
 package app.cleancode.windowsTests;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
+import java.util.function.Function;
 import app.cleancode.windowsTests.platform.PlatformWindow;
 import app.cleancode.windowsTests.platform.windows.WindowsWindow;
 
 public class Window {
-  private static MethodHandle platformWindowConstructor;
+  private static Function<String, PlatformWindow> platformWindowConstructor;
   static {
     try {
     String os = System.getProperty("os.name");
     if (os.startsWith("Windows")) {
-      platformWindowConstructor = MethodHandles.lookup().findConstructor(WindowsWindow.class,
-          MethodType.methodType(void.class, String.class));
+      platformWindowConstructor = WindowsWindow::new;
     } else {
       throw new RuntimeException("Unsupported platform %s".formatted(os));
     }
@@ -26,7 +23,7 @@ public class Window {
 
   public Window(String title) {
     try {
-      platformWindow = (PlatformWindow) platformWindowConstructor.invoke(title);
+      platformWindow = (PlatformWindow) platformWindowConstructor.apply(title);
     } catch (Throwable e) {
       throw new RuntimeException(e);
     }

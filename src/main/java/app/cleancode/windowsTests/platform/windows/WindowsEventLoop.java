@@ -54,7 +54,7 @@ public class WindowsEventLoop {
         WINDOWS.RegisterWindowMessageA(SegmentAllocator.newNativeArena(MemorySession.global())
             .allocateUtf8String("22abc178-8e9e-4cce-ac01-6bc10d034827"));
     messageWindowLatch = new CountDownLatch(1);
-    Thread.ofPlatform().name("Windows Event Processing Thread").start(() -> {
+    Thread.ofPlatform().name("Windows Event Processing Thread").daemon().start(() -> {
       MemoryAddress messageWindowClassName = SegmentAllocator.newNativeArena(MemorySession.global())
           .allocateUtf8String("Message Window Class").address();
       MemorySegment messageWindowClass = WNDCLASS.allocate(MemorySession.global());
